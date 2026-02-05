@@ -1,0 +1,26 @@
+{% extends "frontend/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h1 class="text-xl font-semibold">Dashboard</h1>
+        <div class="muted">Listagens e CRUD rápido (staff-only) para todos os models do projeto.</div>
+      </div>
+      <a class="btn" href="/api/docs/" target="_blank" rel="noopener">Swagger</a>
+    </div>
+    <div class="card-body">
+      <div class="grid grid-3">
+        {% for item in model_links %}
+          <a class="card" href="{{ item.url }}" style="text-decoration:none;">
+            <div class="card-body">
+              <div class="muted">{{ item.app_label|upper }}</div>
+              <div class="text-lg font-semibold">{{ item.verbose_name_plural }}</div>
+              <div class="muted" style="margin-top:.25rem;">{{ item.app_label }}.{{ item.model_name }}</div>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

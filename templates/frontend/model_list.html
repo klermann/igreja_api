@@ -1,0 +1,65 @@
+{% extends "frontend/base.html" %}
+{% load frontend_extras %}
+{% block title %}{{ verbose_name_plural }}{% endblock %}
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h1 class="text-xl font-semibold">{{ verbose_name_plural }}</h1>
+        <div class="muted">{{ app_label }}.{{ model_name }}</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <form method="get" style="display:flex; gap:.5rem; align-items:center;">
+          <input class="input" type="search" name="q" placeholder="Buscar..." value="{{ q }}" style="width: 260px;">
+          <button class="btn" type="submit">Buscar</button>
+        </form>
+        <a class="btn btn-primary" href="{{ create_url }}">Novo</a>
+        <a class="btn" href="{% url 'frontend:dashboard' %}">Voltar</a>
+      </div>
+    </div>
+    <div class="card-body" style="overflow:auto;">
+      <table class="table">
+        <thead>
+          <tr>
+            {% for col in columns %}
+              <th>{{ col.verbose_name|capfirst }}</th>
+            {% endfor %}
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for obj in object_list %}
+            <tr>
+              {% for col in columns %}
+                <td>
+                  {% if col.is_relation and col.many_to_one %}
+                    {{ obj|attr:col.name }}
+                  {% else %}
+                    {{ obj|attr:col.name }}
+                  {% endif %}
+                </td>
+              {% endfor %}
+              <td>
+                <a class="btn" href="{% url 'frontend:model_detail' app_label=app_label model_name=model_name pk=obj.pk %}">Abrir</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="99" class="muted">Nenhum registro.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if is_paginated %}
+        <div style="display:flex; gap:.5rem; align-items:center; margin-top:1rem;">
+          {% if page_obj.has_previous %}
+            <a class="btn" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}">Anterior</a>
+          {% endif %}
+          <span class="muted">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a class="btn" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}">Próxima</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

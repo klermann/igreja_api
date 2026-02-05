@@ -1,0 +1,20 @@
+{% extends "frontend/base.html" %}
+{% block title %}Excluir{% endblock %}
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h1 class="text-xl font-semibold">Excluir {{ verbose_name }}</h1>
+        <div class="muted">Tem certeza?</div>
+      </div>
+      <a class="btn" href="{{ list_url }}">Cancelar</a>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <p>Você está prestes a excluir <strong>#{{ object.pk }}</strong>. Essa ação não pode ser desfeita.</p>
+        <button class="btn btn-danger" type="submit">Confirmar exclusão</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
