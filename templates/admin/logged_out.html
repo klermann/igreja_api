@@ -1,0 +1,28 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{# remove breadcrumbs do admin #}
+{% block breadcrumbs %}{% endblock %}
+
+{# troca o “Return to site” (ou o que o tema estiver exibindo no topo) #}
+{% block nav-global %}
+  <a href="/">{% trans "Voltar ao site" %}</a>
+{% endblock %}
+
+{% block content %}
+  <div style="max-width: 720px; margin: 120px auto; text-align: center;">
+    <h1 style="font-size: 28px; font-weight: 700;">
+      {% trans "Você saiu com sucesso da administração" %}
+    </h1>
+
+    <p style="margin-top: 12px; opacity: .8;">
+      {% trans "Obrigado por passar algum tempo de qualidade com o site hoje." %}
+    </p>
+
+    <div style="margin-top: 28px;">
+      <a class="button" href="{% url 'admin:login' %}">
+        {% trans "Acessar novamente" %}
+      </a>
+    </div>
+  </div>
+{% endblock %}

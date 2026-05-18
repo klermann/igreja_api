@@ -85,12 +85,16 @@ INSTALLED_APPS = [
     "apps.aovivo.apps.AoVivoConfig",
 ]
 
+LOCALE_PATHS = [BASE_DIR / "locale"]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
 
     "django.middleware.locale.LocaleMiddleware",
+
+    "apps.frontend.middleware.ForceAdminPtBRMiddleware",
 
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -263,9 +267,27 @@ from django.templatetags.static import static
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
+def can_access(app_label: str, model: str):
+    """
+    Ex: can_access("church", "congregation")
+    Checa view ou change.
+    """
+    def _check(request):
+        u = request.user
+        if not u.is_authenticated:
+            return False
+        if u.is_superuser:
+            return True
+        return (
+            u.has_perm(f"{app_label}.view_{model}")
+            or u.has_perm(f"{app_label}.change_{model}")
+        )
+    return _check
+
+
 UNFOLD = {
-    "SITE_TITLE": "Igreja API",
-    "SITE_HEADER": "Igreja API • Administração",
+    "SITE_TITLE": "Igreja API ADMS",
+    "SITE_HEADER": "Igreja API ADMS • Administração",
     "SITE_URL": "/",
     "SITE_SYMBOL": "church",
     "SHOW_HISTORY": True,
@@ -286,79 +308,139 @@ UNFOLD = {
             "800": "30 64 175",
             "900": "30 58 138",
         },
-    },
-    "SIDEBAR": {
-        "show_search": True,
-        "navigation": [
-            {
-                "title": _("Acesso"),
-                "items": [
-                    {"title": _("Usuários"), "icon": "person", "link": reverse_lazy("admin:accounts_user_changelist")},
-                    {"title": _("Roles"), "icon": "verified_user",
-                     "link": reverse_lazy("admin:accounts_role_changelist")},
-                    {"title": _("Grupos"), "icon": "group", "link": reverse_lazy("admin:auth_group_changelist")},
-                ],
-            },
-            {
-                "title": _("Igreja"),
-                "items": [
-                    {"title": _("Igrejas"), "icon": "church", "link": reverse_lazy("admin:church_church_changelist")},
-                    {"title": _("Congregações"), "icon": "location_on",
-                     "link": reverse_lazy("admin:church_congregation_changelist")},
-                ],
-            },
-            {
-                "title": _("ADMSKIDS"),
-                "items": [
-                    {"title": _("Crianças"), "icon": "child_care",
-                     "link": reverse_lazy("admin:admskids_kid_changelist")},
-                    {"title": _("Responsáveis"), "icon": "family_restroom",
-                     "link": reverse_lazy("admin:admskids_guardian_changelist")},
-                    {"title": _("Turmas"), "icon": "class",
-                     "link": reverse_lazy("admin:admskids_kidsclass_changelist")},
-                    {"title": _("Sessões"), "icon": "event",
-                     "link": reverse_lazy("admin:admskids_classsession_changelist")},
-                    {"title": _("Matrículas"), "icon": "how_to_reg",
-                     "link": reverse_lazy("admin:admskids_enrollment_changelist")},
-                    {"title": _("Presenças"), "icon": "fact_check",
-                     "link": reverse_lazy("admin:admskids_kidattendance_changelist")},
-                ],
-            },
-            {
-                "title": _("Palavra Pastoral"),
-                "items": [
-                    {
-                        "title": _("Mensagens"),
-                        "icon": "campaign",  # ou "record_voice_over", "play_circle", "video_library"
-                        "link": reverse_lazy("admin:palavra_pastoral_palavrapastoral_changelist"),
-                    },
-                ],
-            },
-            {
-                "title": _("Ao Vivo"),
-                "items": [
-                    {
-                        "title": _("Categorias"),
-                        "icon": "category",
-                        "link": reverse_lazy("admin:aovivo_aovivocategory_changelist"),
-                    },
-                    {
-                        "title": _("Vídeos"),
-                        "icon": "video_library",
-                        "link": reverse_lazy("admin:aovivo_aovivovideo_changelist"),
-                    },
-                ],
-            },
+    },"SIDEBAR": {
+    "show_search": True,
+    "navigation": [
+        {
+            "title": _("Acesso"),
+            "items": [
+                {
+                    "title": _("Usuários"),
+                    "icon": "person",
+                    "link": reverse_lazy("admin:accounts_user_changelist"),
+                    "permission": can_access("accounts", "user"),
+                },
+                {
+                    "title": _("Roles"),
+                    "icon": "verified_user",
+                    "link": reverse_lazy("admin:accounts_role_changelist"),
+                    "permission": can_access("accounts", "role"),
+                },
+                {
+                    "title": _("Grupos"),
+                    "icon": "group",
+                    "link": reverse_lazy("admin:auth_group_changelist"),
+                    "permission": can_access("auth", "group"),
+                },
+            ],
+        },
+        {
+            "title": _("Igreja"),
+            "items": [
+                {
+                    "title": _("Igrejas"),
+                    "icon": "church",
+                    "link": reverse_lazy("admin:church_church_changelist"),
+                    "permission": can_access("church", "church"),
+                },
+                {
+                    "title": _("Congregações"),
+                    "icon": "location_on",
+                    "link": reverse_lazy("admin:church_congregation_changelist"),
+                    "permission": can_access("church", "congregation"),
+                },
+            ],
+        },
+        {
+            "title": _("ADMSKIDS"),
+            "items": [
+                {
+                    "title": _("Crianças"),
+                    "icon": "child_care",
+                    "link": reverse_lazy("admin:admskids_kid_changelist"),
+                    "permission": can_access("admskids", "kid"),
+                },
+                {
+                    "title": _("Responsáveis"),
+                    "icon": "family_restroom",
+                    "link": reverse_lazy("admin:admskids_guardian_changelist"),
+                    "permission": can_access("admskids", "guardian"),
+                },
+                {
+                    "title": _("Turmas"),
+                    "icon": "class",
+                    "link": reverse_lazy("admin:admskids_kidsclass_changelist"),
+                    "permission": can_access("admskids", "kidsclass"),
+                },
+                {
+                    "title": _("Sessões"),
+                    "icon": "event",
+                    "link": reverse_lazy("admin:admskids_classsession_changelist"),
+                    "permission": can_access("admskids", "classsession"),
+                },
+                {
+                    "title": _("Matrículas"),
+                    "icon": "how_to_reg",
+                    "link": reverse_lazy("admin:admskids_enrollment_changelist"),
+                    "permission": can_access("admskids", "enrollment"),
+                },
+                {
+                    "title": _("Presenças"),
+                    "icon": "fact_check",
+                    "link": reverse_lazy("admin:admskids_kidattendance_changelist"),
+                    "permission": can_access("admskids", "kidattendance"),
+                },
+            ],
+        },
+        {
+            "title": _("Palavra Pastoral"),
+            "items": [
+                {
+                    "title": _("Mensagens"),
+                    "icon": "campaign",
+                    "link": reverse_lazy("admin:palavra_pastoral_palavrapastoral_changelist"),
+                    "permission": can_access("palavra_pastoral", "palavrapastoral"),
+                },
+            ],
+        },
+        {
+            "title": _("Ao Vivo"),
+            "items": [
+                {
+                    "title": _("Categorias"),
+                    "icon": "category",
+                    "link": reverse_lazy("admin:aovivo_aovivocategory_changelist"),
+                    "permission": can_access("aovivo", "aovivocategory"),
+                },
+                {
+                    "title": _("Vídeos"),
+                    "icon": "video_library",
+                    "link": reverse_lazy("admin:aovivo_aovivovideo_changelist"),
+                    "permission": can_access("aovivo", "aovivovideo"),
+                },
+            ],
+        },
 
-            # {
-            #     "title": _("Tokens JWT"),
-            #     "items": [
-            #         {"title": _("Outstanding"), "icon": "key", "link": reverse_lazy("admin:token_blacklist_outstandingtoken_changelist")},
-            #         {"title": _("Blacklisted"), "icon": "block", "link": reverse_lazy("admin:token_blacklist_blacklistedtoken_changelist")},
-            #     ],
-            # },
-        ],
-    },
+         {
+             "title": _("Tokens JWT"),
+             "items": [
+                 {
+                     "title": _("Outstanding"),
+                     "icon": "key",
+                     "link": reverse_lazy("admin:token_blacklist_outstandingtoken_changelist"),
+                     "permission": can_access("token_blacklist", "outstandingtoken"),
+                 },
+                 {
+                     "title": _("Blacklisted"),
+                     "icon": "block",
+                     "link": reverse_lazy("admin:token_blacklist_blacklistedtoken_changelist"),
+                     "permission": can_access("token_blacklist", "blacklistedtoken"),
+                 },
+            ],
+         },
+    ],
+},
+
 }
 
 # JWT

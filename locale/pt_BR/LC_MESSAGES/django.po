@@ -1,0 +1,16 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: pt_BR\n"
+
+msgid "Return to site"
+msgstr "Voltar ao site"
+
+msgid "You have been successfully logged out from the administration"
+msgstr "Você saiu com sucesso da administração"
+
+msgid "Welcome back to"
+msgstr "Bem vindo à"
+
+msgid "Accounts"
+msgstr "Contas"

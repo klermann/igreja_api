@@ -1,0 +1,14 @@
+from django.utils import translation
+
+class ForceAdminPtBRMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.path.startswith("/admin/"):
+            translation.activate("pt-br")
+            request.LANGUAGE_CODE = "pt-br"
+
+        response = self.get_response(request)
+        translation.deactivate()
+        return response
